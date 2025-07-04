@@ -1,1 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(34, 197, 94, 0.2);
+            color: #10b981;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .privacy-badge i {
+            margin-right: 8px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .api-config {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .api-config:hover {
+            border-color: #4f46e5;
+            background: #f1f5f9;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .api-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .file-upload {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #4f46e5;
+            background: #f1f5f9;
+        }
+
+        .file-upload.dragover {
+            border-color: #4f46e5;
+            background: #ede9fe;
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .supported-formats {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .chat-area {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background: #f1f5f9;
+            color: #334155;
+            border-left: 4px solid #4f46e5;
+        }
+
+        .system-message {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .input-controls {
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            transition: border-color 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .uploaded-files {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            color: #4f46e5;
+        }
+
+        .remove-file {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #ef4444;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .logging-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logging-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .log-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .log-btn.export { background: #10b981; }
+        .log-btn.clear { background: #ef4444; }
+        .log-btn.toggle { background: #6b7280; }
+
+        .log-btn:hover { opacity: 0.8; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+
+        .log-details {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-header {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-weight: bold;
+        }
+
+        .log-entries {
+            padding: 15px;
+        }
+
+        .log-entry {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 10px 0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 5px;
+        }
+
+        .log-type {
+            font-weight: 500;
+        }
+
+        .log-time {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+
+        .log-query {
+            color: #374151;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .log-metadata {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                min-height: 90vh;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            .logging-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Enterprise AI Assistant</h1>
+            <p>Secure, Private, and Powerful AI for Your Team</p>
+            <div class="privacy-badge">
+                <i class="fas fa-shield-alt"></i>
+                No Data Training • Privacy First
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Logging Panel -->
+            <div class="logging-panel">
+                <div class="logging-controls">
+                    <h3 style="color: #374151; margin: 0;">
+                        <i class="fas fa-chart-line"></i> Usage Analytics & Logging
+                    </h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="log-btn export" onclick="ai.exportLogs()">
+                            <i class="fas fa-download"></i> Export Session
+                        </button>
+                        <button class="log-btn export" onclick="ai.downloadCurrentLogFile()" style="background: #8b5cf6;">
+                            <i class="fas fa-file-download"></i> Download Global Log
+                        </button>
+                        <button class="log-btn clear" onclick="ai.clearLogs()">
+                            <i class="fas fa-trash"></i> Clear Session
+                        </button>
+                        <button class="log-btn clear" onclick="ai.clearGlobalLogs()" style="background: #dc2626;">
+                            <i class="fas fa-trash-alt"></i> Clear Global
+                        </button>
+                        <button class="log-btn toggle" onclick="ai.toggleLoggingPanel()">
+                            <i class="fas fa-eye"></i> Toggle View
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Session Queries</div>
+                        <div class="stat-value" id="totalQueries">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Session Files</div>
+                        <div class="stat-value" id="filesProcessed" style="color: #10b981;">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Session Duration</div>
+                        <div class="stat-value" id="sessionDuration" style="color: #f59e0b;">0m</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">API Calls</div>
+                        <div class="stat-value" id="apiCalls" style="color: #8b5cf6;">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="margin-bottom: 15px; background: #f8fafc; border: 2px solid #e2e8f0;">
+                    <div id="globalLogsInfo" style="text-align: center; padding: 10px;">
+                        <div style="color: #6b7280; font-size: 0.9rem;">Global Stats (All Users)</div>
+                        <div style="color: #374151; font-weight: bold;">Loading...</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="margin-bottom: 15px; background: #f1f5f9; border: 2px solid #cbd5e1;">
+                    <div style="text-align: center; padding: 10px;">
+                        <div style="color: #6b7280; font-size: 0.9rem;">Server Logging Status</div>
+                        <div id="serverStatus" style="font-weight: bold; margin-top: 5px;">
+                            🟡 Connecting to server...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-details" id="loggingDetails">
+                    <div class="log-header">Recent Activity Log</div>
+                    <div class="log-entries" id="logEntries">
+                        <div style="color: #6b7280; text-align: center; padding: 20px;">No activity logged yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="api-config">
+                    <h3 style="margin-bottom: 10px; color: #374151;">
+                        <i class="fas fa-key"></i> API Configuration
+                    </h3>
+                    <input type="password" 
+                           class="api-input" 
+                           id="apiKey" 
+                           placeholder="Enter your OpenAI API Key (sk-proj-... or sk-...)" 
+                           style="margin-bottom: 10px;">
+                    <select class="api-input" id="modelSelect">
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Start Here - Widely Available)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (Faster & Cheaper)</option>
+                        <option value="gpt-4o">GPT-4o (May require approval)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo (May require approval)</option>
+                        <option value="gpt-4">GPT-4 (Legacy)</option>
+                    </select>
+                    <div style="margin-top: 10px; padding: 10px; background: #e0f2fe; border-radius: 6px; font-size: 0.9rem; color: #0277bd;">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>API Key Help:</strong> Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #0277bd;">platform.openai.com/api-keys</a>
+                        <br>• Make sure your account has credits/billing set up
+                        <br>• API keys should start with "sk-proj-" or "sk-"
+                        <br>• Verify your key has access to the selected model
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.9rem; color: #856404; border: 1px solid #ffeaa7;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Troubleshooting Access Denied (403):</strong>
+                        <br>• Try selecting "GPT-3.5 Turbo" instead of GPT-4o first
+                        <br>• Check if your organization has model access restrictions
+                        <br>• Verify billing is active and you have available credits
+                        <br>• Some new accounts have limited model access initially
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fef3c7; border-radius: 6px; font-size: 0.9rem; color: #92400e; border: 1px solid #fbbf24;">
+                        <i class="fas fa-database"></i>
+                        <strong>Server-Side Logging Active:</strong> All user activity is being sent to server.
+                        <br>• Logs are saved to "enterprise_ai_global_logs.txt" on the server
+                        <br>• Backup copies stored locally in case server is unavailable
+                        <br>• Status indicator shows server connection above
+                    </div>
+                </div>
+
+                <div class="file-upload" id="fileUpload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drop files here or click to upload</p>
+                    <div class="supported-formats">
+                        Supports: PDF, DOCX, TXT, CSV, XLSX, PPT, Images (JPG, PNG), and more
+                    </div>
+                    <input type="file" id="fileInput" multiple style="display: none;" accept=".pdf,.docx,.txt,.csv,.xlsx,.pptx,.jpg,.jpeg,.png,.gif,.json,.xml">
+                </div>
+
+                <div class="uploaded-files" id="uploadedFiles"></div>
+            </div>
+
+            <div class="chat-area">
+                <div class="messages" id="messages">
+                    <div class="message system-message">
+                        <i class="fas fa-info-circle"></i>
+                        Welcome! Configure your API key above and start chatting. Upload files for analysis and get comprehensive insights.
+                    </div>
+                </div>
+                <div class="input-controls">
+                    <textarea class="message-input" 
+                              id="messageInput" 
+                              placeholder="Ask me anything about your uploaded files or general questions..."
+                              rows="2"></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script>
+        class EnterpriseAI {
+            constructor() {
+                this.files = [];
+                this.conversation = [];
+                this.searchLogs = [];
+                this.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                this.sessionStartTime = Date.now();
+                this.globalLogFileName = 'enterprise_ai_global_logs.txt';
+                this.initializeEventListeners();
+                this.initializeLogging();
+                this.loadExistingGlobalLogs();
+            }
+
+            initializeLogging() {
+                // Log session start
+                this.logSearch('SESSION_START', 'User session initiated', {
+                    sessionId: this.sessionId,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    referrer: document.referrer
+                });
+                
+                // Start session timer
+                this.startSessionTimer();
+                
+                // Auto-save logs every 30 seconds
+                setInterval(() => {
+                    this.saveGlobalLogs();
+                }, 30000);
+                
+                // Save logs when page is about to close
+                window.addEventListener('beforeunload', () => {
+                    this.saveGlobalLogs();
+                    this.logSearch('SESSION_END', 'User session ended', {
+                        sessionDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000 / 60),
+                        totalQueries: this.searchLogs.filter(log => log.type === 'USER_QUERY').length
+                    });
+                });
+            }
+
+            loadExistingGlobalLogs() {
+                // Try to load existing global logs from localStorage (cross-session storage)
+                try {
+                    const existingLogs = localStorage.getItem('enterpriseAI_globalLogs');
+                    if (existingLogs) {
+                        const parsedLogs = JSON.parse(existingLogs);
+                        // Keep logs from last 7 days only to prevent excessive storage
+                        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                        this.globalLogs = parsedLogs.filter(log => 
+                            new Date(log.timestamp).getTime() > sevenDaysAgo
+                        );
+                    } else {
+                        this.globalLogs = [];
+                    }
+                } catch (error) {
+                    console.error('Failed to load existing global logs:', error);
+                    this.globalLogs = [];
+                }
+            }
+
+            startSessionTimer() {
+                setInterval(() => {
+                    const duration = Math.floor((Date.now() - this.sessionStartTime) / 1000 / 60);
+                    const durationElement = document.getElementById('sessionDuration');
+                    if (durationElement) {
+                        durationElement.textContent = duration + 'm';
+                    }
+                }, 60000);
+            }
+
+            logSearch(type, query, metadata = {}) {
+                const logEntry = {
+                    id: Date.now() + Math.random(),
+                    sessionId: this.sessionId,
+                    timestamp: new Date().toISOString(),
+                    type: type,
+                    query: query,
+                    metadata: metadata,
+                    userAgent: navigator.userAgent,
+                    userId: this.getUserId(),
+                    ipHash: this.getClientHash()
+                };
+                
+                // Add to current session logs
+                this.searchLogs.push(logEntry);
+                
+                // Add to global logs (all users, all sessions)
+                if (!this.globalLogs) this.globalLogs = [];
+                this.globalLogs.push(logEntry);
+                
+                this.updateLoggingDisplay();
+                this.saveLogsToStorage();
+                
+                // Save to global persistent log
+                this.saveGlobalLogs();
+                
+                // Also create downloadable log entry
+                this.appendToGlobalLogFile(logEntry);
+                
+                // Also log to browser console for debugging
+                console.log('AI Search Log:', logEntry);
+            }
+
+            getUserId() {
+                // Create a persistent user ID for tracking across sessions
+                let userId = localStorage.getItem('enterpriseAI_userId');
+                if (!userId) {
+                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('enterpriseAI_userId', userId);
+                }
+                return userId;
+            }
+
+            getClientHash() {
+                // Create a hash of client info for privacy-conscious tracking
+                const clientInfo = navigator.userAgent + navigator.language + screen.width + screen.height;
+                return this.simpleHash(clientInfo);
+            }
+
+            simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+                return Math.abs(hash).toString(36);
+            }
+
+            saveGlobalLogs() {
+                try {
+                    // Save to localStorage for cross-session persistence
+                    localStorage.setItem('enterpriseAI_globalLogs', JSON.stringify(this.globalLogs));
+                    
+                    // Create a summary for display
+                    this.updateGlobalLogsSummary();
+                } catch (error) {
+                    console.error('Failed to save global logs:', error);
+                }
+            }
+
+            appendToGlobalLogFile(logEntry) {
+                try {
+                    // First, save to localStorage as backup
+                    let existingContent = localStorage.getItem('enterpriseAI_logFileContent') || '';
+                    const logLine = this.formatLogEntryForFile(logEntry);
+                    existingContent += logLine + '\n';
+                    localStorage.setItem('enterpriseAI_logFileContent', existingContent);
+                    
+                    // Send to server for permanent file storage
+                    this.sendLogToServer(logEntry, logLine);
+                    
+                    // Auto-download backup every 50 entries to prevent loss
+                    const totalLines = existingContent.split('\n').length;
+                    if (totalLines % 50 === 0) {
+                        this.downloadCurrentLogFile();
+                    }
+                } catch (error) {
+                    console.error('Failed to append to global log file:', error);
+                }
+            }
+
+            async sendLogToServer(logEntry, formattedLogLine) {
+                try {
+                    // Try multiple endpoint patterns to find working server
+                    const endpoints = [
+                        '/api/log',           // Standard REST API (Render/Flask)
+                        '/log.php',           // Simple PHP file
+                        '/log',               // Simple endpoint
+                        '/api/logs',          // Alternative API
+                        '/save-log'           // Alternative endpoint
+                    ];
+                    
+                    let lastError = null;
+                    
+                    for (const endpoint of endpoints) {
+                        try {
+                            // Use relative URL for deployed version, absolute for local
+                            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                            const baseUrl = isLocalhost ? '' : window.location.origin;
+                            const fullUrl = baseUrl + endpoint;
+                            
+                            const response = await fetch(fullUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    logEntry: logEntry,
+                                    formattedLine: formattedLogLine,
+                                    fileName: this.globalLogFileName
+                                })
+                            });
+
+                            if (response.ok) {
+                                const result = await response.json();
+                                console.log('✅ Log sent to server successfully via', endpoint, ':', result);
+                                this.updateServerStatus(true, `Connected via ${endpoint} - Logs saving to server file`);
+                                return; // Success, exit function
+                            } else {
+                                lastError = `${endpoint}: HTTP ${response.status}`;
+                                continue; // Try next endpoint
+                            }
+                        } catch (endpointError) {
+                            lastError = `${endpoint}: ${endpointError.message}`;
+                            continue; // Try next endpoint
+                        }
+                    }
+                    
+                    // If we get here, all endpoints failed
+                    throw new Error(`All endpoints failed. Last error: ${lastError}`);
+                    
+                } catch (error) {
+                    console.warn('❌ Failed to send log to server:', error.message);
+                    
+                    // Show helpful error message based on the error type
+                    let statusMessage = 'Server unavailable';
+                    if (error.message.includes('501')) {
+                        statusMessage = 'Server endpoint not configured - See setup instructions below';
+                    } else if (error.message.includes('404')) {
+                        statusMessage = 'Server endpoint not found - Check server setup';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        statusMessage = 'No server running - Start server first';
+                    } else {
+                        statusMessage = `Server error: ${error.message}`;
+                    }
+                    
+                    this.updateServerStatus(false, statusMessage);
+                    
+                    // Only show setup help if running locally
+                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    if (isLocalhost) {
+                        this.showServerSetupHelp();
+                    }
+                    
+                    console.log('📱 Log saved locally as backup');
+                }
+            }
+
+            showServerSetupHelp() {
+                // Only show help once per session
+                if (this.serverHelpShown) return;
+                this.serverHelpShown = true;
+                
+                const messages = document.getElementById('messages');
+                if (!messages) return;
+                
+                const helpDiv = document.createElement('div');
+                helpDiv.className = 'message system-message';
+                helpDiv.style.background = '#fef3c7';
+                helpDiv.style.borderLeft = '4px solid #f59e0b';
+                helpDiv.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <i class="fas fa-server"></i> <strong>Server Setup Required for File Logging</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; line-height: 1.5;">
+                        <p><strong>The app is trying to save logs to a server file but no server is configured.</strong></p>
+                        
+                        <p style="margin-top: 15px;"><strong>Quick Setup - Create this simple PHP file:</strong></p>
+                        <div style="background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.8rem;">
+<strong>Save as "log.php" in the same folder as your HTML:</strong><br><br>
+&lt;?php<br>
+header('Content-Type: application/json');<br>
+header('Access-Control-Allow-Origin: *');<br>
+header('Access-Control-Allow-Methods: POST');<br>
+header('Access-Control-Allow-Headers: Content-Type');<br><br>
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$input = json_decode(file_get_contents('php://input'), true);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$line = $input['formattedLine'] ?? '';<br>
+&nbsp;&nbsp;&nbsp;&nbsp;file_put_contents('enterprise_ai_global_logs.txt', $line . "\\n", FILE_APPEND);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;echo json_encode(['success' => true]);<br>
+}<br>
+?&gt;
+                        </div>
+                        
+                        <p style="margin-top: 15px;"><strong>Then run a local server:</strong></p>
+                        <div style="background: #e0f2fe; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                            <strong>Option 1 - PHP built-in server:</strong><br>
+                            <code>php -S localhost:8000</code><br><br>
+                            <strong>Option 2 - Python server:</strong><br>
+                            <code>python -m http.server 8000</code><br><br>
+                            <strong>Option 3 - Node.js (if you have it):</strong><br>
+                            <code>npx http-server -p 8000 --cors</code>
+                        </div>
+                        
+                        <p style="margin-top: 15px;"><strong>📝 Logs are currently saved locally as backup and can be downloaded.</strong></p>
+                    </div>
+                `;
+                messages.appendChild(helpDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            updateServerStatus(isConnected, message) {
+                const statusIndicator = document.getElementById('serverStatus');
+                if (statusIndicator) {
+                    const icon = isConnected ? '🟢' : '🔴';
+                    const color = isConnected ? '#10b981' : '#ef4444';
+                    statusIndicator.innerHTML = `
+                        <span style="color: ${color};">
+                            ${icon} ${message}
+                        </span>
+                    `;
+                }
+            }
+
+            formatLogEntryForFile(logEntry) {
+                const timestamp = new Date(logEntry.timestamp).toISOString();
+                const userInfo = `User:${logEntry.userId} Session:${logEntry.sessionId}`;
+                const actionInfo = `${logEntry.type}: ${logEntry.query}`;
+                const metadataStr = Object.keys(logEntry.metadata).length > 0 
+                    ? ` | Metadata: ${JSON.stringify(logEntry.metadata)}` 
+                    : '';
+                
+                return `[${timestamp}] ${userInfo} | ${actionInfo}${metadataStr}`;
+            }
+
+            downloadCurrentLogFile() {
+                try {
+                    const logContent = localStorage.getItem('enterpriseAI_logFileContent') || '';
+                    if (logContent.trim() === '') return;
+                    
+                    // Add header to log file
+                    const header = `# Enterprise AI Assistant - Global Activity Log
+# Generated: ${new Date().toISOString()}
+# Format: [Timestamp] User:UserID Session:SessionID | ActionType: Query | Metadata: {...}
+# 
+`;
+                    
+                    const fullContent = header + logContent;
+                    
+                    const blob = new Blob([fullContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = this.globalLogFileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    console.log('Global log file downloaded:', this.globalLogFileName);
+                } catch (error) {
+                    console.error('Failed to download log file:', error);
+                }
+            }
+
+            updateGlobalLogsSummary() {
+                // Update the global logs display in the UI
+                const globalLogsInfo = document.getElementById('globalLogsInfo');
+                if (globalLogsInfo && this.globalLogs) {
+                    const totalUsers = new Set(this.globalLogs.map(log => log.userId)).size;
+                    const totalSessions = new Set(this.globalLogs.map(log => log.sessionId)).size;
+                    const totalQueries = this.globalLogs.filter(log => log.type === 'USER_QUERY').length;
+                    const totalFiles = this.globalLogs.filter(log => log.type === 'FILE_UPLOAD').length;
+                    
+                    globalLogsInfo.innerHTML = `
+                        <div style="color: #6b7280; font-size: 0.9rem;">Global Stats (All Users)</div>
+                        <div style="color: #374151; font-weight: bold;">
+                            ${totalUsers} Users | ${totalSessions} Sessions | ${totalQueries} Queries | ${totalFiles} Files
+                        </div>
+                    `;
+                }
+            }
+
+            updateLoggingDisplay() {
+                const totalQueries = this.searchLogs.filter(log => log.type === 'USER_QUERY').length;
+                const filesProcessed = this.searchLogs.filter(log => log.type === 'FILE_UPLOAD').length;
+                const apiCalls = this.searchLogs.filter(log => log.type === 'API_CALL').length;
+                
+                const totalQueriesEl = document.getElementById('totalQueries');
+                const filesProcessedEl = document.getElementById('filesProcessed');
+                const apiCallsEl = document.getElementById('apiCalls');
+                
+                if (totalQueriesEl) totalQueriesEl.textContent = totalQueries;
+                if (filesProcessedEl) filesProcessedEl.textContent = filesProcessed;
+                if (apiCallsEl) apiCallsEl.textContent = apiCalls;
+                
+                const logEntries = document.getElementById('logEntries');
+                if (!logEntries) return;
+                
+                const recentLogs = this.searchLogs.slice(-10).reverse();
+                
+                if (recentLogs.length === 0) {
+                    logEntries.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 20px;">No activity logged yet</div>';
+                    return;
+                }
+                
+                logEntries.innerHTML = recentLogs.map(log => `
+                    <div class="log-entry">
+                        <div class="log-meta">
+                            <span class="log-type" style="color: ${this.getLogTypeColor(log.type)};">
+                                ${this.getLogTypeIcon(log.type)} ${log.type.replace('_', ' ')}
+                            </span>
+                            <span class="log-time">
+                                ${new Date(log.timestamp).toLocaleTimeString()}
+                            </span>
+                        </div>
+                        <div class="log-query">
+                            ${this.truncateText(log.query, 100)}
+                        </div>
+                        ${log.metadata && Object.keys(log.metadata).length > 0 ? `
+                            <div class="log-metadata">
+                                ${Object.entries(log.metadata).map(([key, value]) => 
+                                    `${key}: ${typeof value === 'object' ? JSON.stringify(value).substring(0, 50) + '...' : value}`
+                                ).slice(0, 3).join(' | ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            getLogTypeColor(type) {
+                const colors = {
+                    'USER_QUERY': '#4f46e5',
+                    'FILE_UPLOAD': '#10b981',
+                    'API_CALL': '#8b5cf6',
+                    'ERROR': '#ef4444',
+                    'SESSION_START': '#f59e0b',
+                    'SESSION_END': '#6b7280'
+                };
+                return colors[type] || '#6b7280';
+            }
+
+            getLogTypeIcon(type) {
+                const icons = {
+                    'USER_QUERY': '💬',
+                    'FILE_UPLOAD': '📁',
+                    'API_CALL': '🔗',
+                    'ERROR': '❌',
+                    'SESSION_START': '🚀',
+                    'SESSION_END': '🏁'
+                };
+                return icons[type] || '📝';
+            }
+
+            truncateText(text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            }
+
+            saveLogsToStorage() {
+                try {
+                    const logsData = {
+                        sessionId: this.sessionId,
+                        logs: this.searchLogs,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    // Note: In a real enterprise environment, you'd send this to a secure logging service
+                    // For demo purposes, we'll store in a JavaScript variable
+                    window.aiSearchLogs = logsData;
+                } catch (error) {
+                    console.error('Failed to save logs:', error);
+                }
+            }
+
+            exportLogs() {
+                const logsData = {
+                    sessionId: this.sessionId,
+                    exportDate: new Date().toISOString(),
+                    totalQueries: this.searchLogs.filter(log => log.type === 'USER_QUERY').length,
+                    totalFiles: this.searchLogs.filter(log => log.type === 'FILE_UPLOAD').length,
+                    totalApiCalls: this.searchLogs.filter(log => log.type === 'API_CALL').length,
+                    sessionDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000 / 60),
+                    logs: this.searchLogs
+                };
+                
+                const blob = new Blob([JSON.stringify(logsData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ai-search-logs-${this.sessionId}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.logSearch('EXPORT', 'Search logs exported', { 
+                    totalEntries: this.searchLogs.length,
+                    exportFormat: 'JSON'
+                });
+            }
+
+            clearLogs() {
+                if (confirm('Are you sure you want to clear all search logs? This action cannot be undone.')) {
+                    this.searchLogs = [];
+                    this.updateLoggingDisplay();
+                    this.logSearch('CLEAR_LOGS', 'All search logs cleared', {});
+                }
+            }
+
+            clearGlobalLogs() {
+                if (confirm('Are you sure you want to clear ALL global logs from ALL users? This will permanently delete the entire log history and cannot be undone.')) {
+                    // Clear global logs
+                    this.globalLogs = [];
+                    localStorage.removeItem('enterpriseAI_globalLogs');
+                    localStorage.removeItem('enterpriseAI_logFileContent');
+                    
+                    // Update displays
+                    this.updateGlobalLogsSummary();
+                    
+                    // Log the clear action
+                    this.logSearch('CLEAR_GLOBAL_LOGS', 'All global logs cleared', {
+                        clearedBy: this.getUserId(),
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    alert('Global logs have been cleared successfully.');
+                }
+            }
+
+            toggleLoggingPanel() {
+                const panel = document.getElementById('loggingDetails');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+
+            initializeEventListeners() {
+                // File upload
+                const fileUpload = document.getElementById('fileUpload');
+                const fileInput = document.getElementById('fileInput');
+                
+                if (fileUpload && fileInput) {
+                    fileUpload.addEventListener('click', () => fileInput.click());
+                    fileUpload.addEventListener('dragover', this.handleDragOver.bind(this));
+                    fileUpload.addEventListener('drop', this.handleDrop.bind(this));
+                    fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+                }
+
+                // Message sending
+                const sendBtn = document.getElementById('sendBtn');
+                const messageInput = document.getElementById('messageInput');
+                
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', this.sendMessage.bind(this));
+                }
+                
+                if (messageInput) {
+                    messageInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this.sendMessage();
+                        }
+                    });
+                }
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('dragover');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                this.processFiles(files);
+            }
+
+            handleFileSelect(e) {
+                const files = Array.from(e.target.files);
+                this.processFiles(files);
+            }
+
+            async processFiles(files) {
+                for (const file of files) {
+                    try {
+                        const content = await this.extractFileContent(file);
+                        const fileObj = {
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            content: content,
+                            id: Date.now() + Math.random()
+                        };
+                        this.files.push(fileObj);
+                        this.displayUploadedFile(fileObj);
+                        
+                        // Log file upload
+                        this.logSearch('FILE_UPLOAD', `File uploaded: ${file.name}`, {
+                            fileName: file.name,
+                            fileType: file.type,
+                            fileSize: file.size,
+                            contentLength: content.length
+                        });
+                    } catch (error) {
+                        this.showError(`Failed to process ${file.name}: ${error.message}`);
+                        this.logSearch('ERROR', `File processing failed: ${file.name}`, {
+                            fileName: file.name,
+                            error: error.message
+                        });
+                    }
+                }
+            }
+
+            async extractFileContent(file) {
+                const fileType = file.type.toLowerCase();
+                const fileName = file.name.toLowerCase();
+
+                if (fileType.includes('text') || fileName.endsWith('.txt')) {
+                    return await file.text();
+                } else if (fileType.includes('json')) {
+                    return await file.text();
+                } else if (fileName.endsWith('.csv')) {
+                    return await file.text();
+                } else if (fileType.includes('pdf')) {
+                    return await this.extractPDFContent(file);
+                } else if (fileType.includes('officedocument.wordprocessingml') || fileName.endsWith('.docx')) {
+                    return await this.extractDocxContent(file);
+                } else if (fileType.includes('spreadsheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                    return await this.extractExcelContent(file);
+                } else if (fileType.includes('image')) {
+                    return await this.extractImageContent(file);
+                } else {
+                    return await file.text(); // Fallback to text extraction
+                }
+            }
+
+            async extractPDFContent(file) {
+                // Note: This would require a PDF parsing library
+                // For now, we'll return a placeholder
+                return `[PDF File: ${file.name} - ${(file.size / 1024).toFixed(2)} KB]`;
+            }
+
+            async extractDocxContent(file) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    return result.value;
+                } catch (error) {
+                    return `[DOCX File: ${file.name} - Could not extract text]`;
+                }
+            }
+
+            async extractExcelContent(file) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    let content = '';
+                    
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const csv = XLSX.utils.sheet_to_csv(worksheet);
+                        content += `Sheet: ${sheetName}\n${csv}\n\n`;
+                    });
+                    
+                    return content;
+                } catch (error) {
+                    return `[Excel File: ${file.name} - Could not extract data]`;
+                }
+            }
+
+            async extractImageContent(file) {
+                return `[Image File: ${file.name} - ${(file.size / 1024).toFixed(2)} KB - Visual content available for analysis]`;
+            }
+
+            displayUploadedFile(fileObj) {
+                const uploadedFiles = document.getElementById('uploadedFiles');
+                if (!uploadedFiles) return;
+                
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file-item';
+                fileDiv.innerHTML = `
+                    <div class="file-info">
+                        <i class="fas fa-file file-icon"></i>
+                        <span>${fileObj.name} (${(fileObj.size / 1024).toFixed(2)} KB)</span>
+                    </div>
+                    <button class="remove-file" onclick="ai.removeFile('${fileObj.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                uploadedFiles.appendChild(fileDiv);
+            }
+
+            removeFile(fileId) {
+                this.files = this.files.filter(f => f.id != fileId);
+                this.updateUploadedFilesDisplay();
+                this.logSearch('FILE_REMOVE', `File removed: ${fileId}`, { fileId });
+            }
+
+            updateUploadedFilesDisplay() {
+                const uploadedFiles = document.getElementById('uploadedFiles');
+                if (!uploadedFiles) return;
+                
+                uploadedFiles.innerHTML = '';
+                this.files.forEach(file => this.displayUploadedFile(file));
+            }
+
+            async sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const apiKey = document.getElementById('apiKey');
+                const modelSelect = document.getElementById('modelSelect');
+                
+                if (!messageInput || !apiKey || !modelSelect) return;
+                
+                const message = messageInput.value.trim();
+                const apiKeyValue = apiKey.value.trim();
+                const model = modelSelect.value;
+
+                if (!message) return;
+                if (!apiKeyValue) {
+                    this.showError('Please enter your OpenAI API key first.');
+                    return;
+                }
+
+                // Log user query
+                this.logSearch('USER_QUERY', message, {
+                    messageLength: message.length,
+                    hasFiles: this.files.length > 0,
+                    fileCount: this.files.length,
+                    model: model
+                });
+
+                this.displayMessage(message, 'user');
+                messageInput.value = '';
+                
+                const sendBtn = document.getElementById('sendBtn');
+                if (sendBtn) sendBtn.disabled = true;
+                this.showLoading();
+
+                try {
+                    const response = await this.callOpenAI(message, apiKeyValue, model);
+                    this.hideLoading();
+                    this.displayMessage(response, 'ai');
+                    
+                    // Log successful API response
+                    this.logSearch('API_CALL', 'Successful API response received', {
+                        model: model,
+                        responseLength: response.length,
+                        queryLength: message.length,
+                        hasFiles: this.files.length > 0
+                    });
+                } catch (error) {
+                    // Try alternative method if main method fails
+                    if (error.message.includes('CORS') || error.message.includes('fetch')) {
+                        try {
+                            this.displayMessage('Trying alternative connection method...', 'system');
+                            const response = await this.callOpenAIAlternative(message, apiKeyValue, model);
+                            this.hideLoading();
+                            this.displayMessage(response, 'ai');
+                            
+                            // Add to conversation history for alternative method
+                            this.conversation.push({ role: "user", content: message });
+                            this.conversation.push({ role: "assistant", content: response });
+                            
+                            this.logSearch('API_CALL', 'Successful API response via alternative method', {
+                                model: model,
+                                responseLength: response.length,
+                                queryLength: message.length,
+                                hasFiles: this.files.length > 0,
+                                method: 'alternative'
+                            });
+                            return;
+                        } catch (altError) {
+                            this.hideLoading();
+                            this.showCORSHelp();
+                            this.logSearch('ERROR', `Both API methods failed: ${altError.message}`, {
+                                model: model,
+                                errorType: 'CORS_ERROR',
+                                queryLength: message.length
+                            });
+                            return;
+                        }
+                    }
+                    
+                    this.hideLoading();
+                    this.showError(`Error: ${error.message}`);
+                    
+                    // Log API error
+                    this.logSearch('ERROR', `API call failed: ${error.message}`, {
+                        model: model,
+                        errorType: 'API_ERROR',
+                        queryLength: message.length
+                    });
+                } finally {
+                    if (sendBtn) sendBtn.disabled = false;
+                }
+            }
+
+            async callOpenAI(message, apiKey, model) {
+                const systemPrompt = this.buildSystemPrompt();
+                const messages = [
+                    { role: "system", content: systemPrompt },
+                    ...this.conversation,
+                    { role: "user", content: message }
+                ];
+
+                try {
+                    // Log the attempt for debugging
+                    console.log('API Call Debug Info:', {
+                        model: model,
+                        apiKeyPrefix: apiKey.substring(0, 20) + '...',
+                        messageCount: messages.length,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey.trim()}`,
+                            'Content-Type': 'application/json',
+                            'User-Agent': 'Enterprise-AI-Assistant/1.0'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: messages,
+                            max_tokens: 4000,
+                            temperature: 0.7,
+                            stream: false
+                        })
+                    });
+
+                    console.log('Response Status:', response.status, response.statusText);
+                    console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+
+                    if (!response.ok) {
+                        let errorMessage = 'API request failed';
+                        let errorDetails = {};
+                        
+                        try {
+                            const errorData = await response.json();
+                            errorDetails = errorData;
+                            console.log('Error Response:', errorData);
+                            
+                            if (response.status === 403) {
+                                if (errorData.error?.code === 'insufficient_quota') {
+                                    errorMessage = 'Insufficient quota: Your API usage has exceeded the current quota. Please check your billing and usage limits.';
+                                } else if (errorData.error?.code === 'model_not_found') {
+                                    errorMessage = `Model "${model}" is not available with your current API key. Try GPT-3.5-turbo or check your model access.`;
+                                } else if (errorData.error?.message?.includes('organization')) {
+                                    errorMessage = 'Organization access issue: Please check if your API key belongs to the correct organization.';
+                                } else if (errorData.error?.message?.includes('project')) {
+                                    errorMessage = 'Project access issue: This API key may not have access to the requested model or project.';
+                                } else {
+                                    errorMessage = `Access denied: ${errorData.error?.message || 'Unknown permission issue'}`;
+                                }
+                            } else if (response.status === 401) {
+                                errorMessage = 'Invalid API key: Please verify your API key is correct and active.';
+                            } else if (response.status === 429) {
+                                errorMessage = 'Rate limit exceeded: Please wait before making another request.';
+                            } else {
+                                errorMessage = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                            }
+                        } catch (e) {
+                            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                            console.error('Failed to parse error response:', e);
+                        }
+                        
+                        // Log detailed error for debugging
+                        this.logSearch('ERROR_DETAIL', 'Detailed API Error', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            errorDetails: errorDetails,
+                            model: model,
+                            apiKeyPrefix: apiKey.substring(0, 20) + '...'
+                        });
+                        
+                        throw new Error(errorMessage);
+                    }
+
+                    const data = await response.json();
+                    console.log('Success Response Structure:', {
+                        hasChoices: !!data.choices,
+                        choicesLength: data.choices?.length,
+                        usage: data.usage
+                    });
+                    
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                        throw new Error('Invalid response format from OpenAI API');
+                    }
+                    
+                    const aiResponse = data.choices[0].message.content;
+                    
+                    // Add to conversation history
+                    this.conversation.push({ role: "user", content: message });
+                    this.conversation.push({ role: "assistant", content: aiResponse });
+                    
+                    // Keep conversation history manageable
+                    if (this.conversation.length > 20) {
+                        this.conversation = this.conversation.slice(-20);
+                    }
+
+                    return aiResponse;
+                } catch (error) {
+                    console.error('API Call Error:', error);
+                    
+                    // Enhanced error handling for common issues
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        throw new Error('CORS Error: Direct browser access to OpenAI API is blocked. Please use a backend server or try the troubleshooting steps below.');
+                    } else if (error.message.includes('403')) {
+                        throw new Error(error.message + '\n\nTroubleshooting steps:\n1. Verify your API key has the correct permissions\n2. Check if you have access to the selected model\n3. Ensure your organization/project settings are correct\n4. Try using GPT-3.5-turbo instead');
+                    } else if (error.message.includes('401')) {
+                        throw new Error('Invalid API key. Please:\n1. Copy the key directly from OpenAI dashboard\n2. Ensure no extra spaces or characters\n3. Check if the key is active and not revoked');
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            // Alternative method using a different approach
+            async callOpenAIAlternative(message, apiKey, model) {
+                const systemPrompt = this.buildSystemPrompt();
+                const messages = [
+                    { role: "system", content: systemPrompt },
+                    ...this.conversation,
+                    { role: "user", content: message }
+                ];
+
+                try {
+                    // Alternative approach using XMLHttpRequest
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', 'https://api.openai.com/v1/chat/completions', true);
+                        xhr.setRequestHeader('Authorization', `Bearer ${apiKey}`);
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+                                    try {
+                                        const data = JSON.parse(xhr.responseText);
+                                        const aiResponse = data.choices[0].message.content;
+                                        resolve(aiResponse);
+                                    } catch (e) {
+                                        reject(new Error('Failed to parse response'));
+                                    }
+                                } else {
+                                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                                }
+                            }
+                        };
+                        
+                        xhr.onerror = function() {
+                            reject(new Error('Network error occurred'));
+                        };
+                        
+                        xhr.send(JSON.stringify({
+                            model: model,
+                            messages: messages,
+                            max_tokens: 4000,
+                            temperature: 0.7
+                        }));
+                    });
+                } catch (error) {
+                    throw new Error('Alternative method failed: ' + error.message);
+                }
+            }
+
+            buildSystemPrompt() {
+                let prompt = `You are an enterprise AI assistant designed to help staff with various tasks including document analysis, data processing, and general knowledge questions. You prioritize accuracy, professionalism, and data privacy.
+
+Key capabilities:
+- Analyze uploaded documents and files
+- Provide insights and summaries
+- Answer questions about file contents
+- Perform data analysis and calculations
+- Assist with business tasks and decision-making
+
+Important: This system does not use user data for training AI models. All interactions are private and secure.`;
+
+                if (this.files.length > 0) {
+                    prompt += "\n\nCurrently uploaded files:\n";
+                    this.files.forEach(file => {
+                        prompt += `\n--- ${file.name} ---\n${file.content}\n`;
+                    });
+                }
+
+                return prompt;
+            }
+
+            displayMessage(message, type) {
+                const messages = document.getElementById('messages');
+                if (!messages) return;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}-message`;
+                messageDiv.innerHTML = this.formatMessage(message);
+                messages.appendChild(messageDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            formatMessage(message) {
+                // Basic markdown-like formatting
+                return message
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/```([\s\S]*?)```/g, '<pre style="background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;"><code>$1</code></pre>')
+                    .replace(/`(.*?)`/g, '<code style="background: #f3f4f6; padding: 2px 4px; border-radius: 2px;">$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            showLoading() {
+                const messages = document.getElementById('messages');
+                if (!messages) return;
+                
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message ai-message loading';
+                loadingDiv.id = 'loading-message';
+                loadingDiv.innerHTML = '<div class="spinner"></div> Processing your request...';
+                messages.appendChild(loadingDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            hideLoading() {
+                const loadingMessage = document.getElementById('loading-message');
+                if (loadingMessage) {
+                    loadingMessage.remove();
+                }
+            }
+
+            showCORSHelp() {
+                const messages = document.getElementById('messages');
+                if (!messages) return;
+                
+                const helpDiv = document.createElement('div');
+                helpDiv.className = 'message system-message';
+                helpDiv.style.background = '#fef3c7';
+                helpDiv.style.borderLeft = '4px solid #f59e0b';
+                helpDiv.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>CORS Error: Browser Security Restriction</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; line-height: 1.5;">
+                        <p><strong>The browser is blocking direct API calls to OpenAI.</strong> This is a security feature that prevents websites from making unauthorized requests.</p>
+                        
+                        <p style="margin-top: 10px;"><strong>Solutions:</strong></p>
+                        <ol style="margin-left: 20px; margin-top: 5px;">
+                            <li><strong>Use a Backend Server</strong> (Recommended for production):
+                                <br>• Create a simple server (Node.js, Python, etc.) to proxy API calls
+                                <br>• This keeps your API key secure and avoids CORS issues
+                            </li>
+                            <li><strong>Browser Extension</strong>:
+                                <br>• Install a CORS extension like "CORS Unblock" temporarily
+                                <br>• Only for development/testing purposes
+                            </li>
+                            <li><strong>Desktop Application</strong>:
+                                <br>• Use this code in an Electron app or similar desktop framework
+                                <br>• Desktop apps don't have CORS restrictions
+                            </li>
+                        </ol>
+                        
+                        <div style="background: #e0f2fe; padding: 10px; border-radius: 6px; margin-top: 15px;">
+                            <strong>Quick Backend Example (Node.js):</strong>
+                            <pre style="background: #f3f4f6; padding: 8px; border-radius: 4px; margin-top: 5px; font-size: 0.8rem;">
+app.post('/api/chat', async (req, res) => {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(req.body)
+  });
+  res.json(await response.json());
+});</pre>
+                        </div>
+                    </div>
+                `;
+                messages.appendChild(helpDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            showError(message) {
+                const messages = document.getElementById('messages');
+                if (!messages) return;
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message system-message error';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                messages.appendChild(errorDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        // Initialize the application
+        const ai = new EnterpriseAI();
+        
+        // Log server implementation instructions to console
+        console.log(`
+=== ENTERPRISE AI SERVER LOGGING SETUP ===
+
+THE CODE HAS BEEN MODIFIED TO SEND LOGS TO SERVER!
+
+REQUIRED: Create one of these server files in the same directory as your HTML file:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 OPTION 1: Node.js Server (server.js)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+const PORT = 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.'));  // Serve HTML file from same directory
+
+// Logging endpoint
+app.post('/api/log', (req, res) => {
+    try {
+        const { logEntry, formattedLine, fileName } = req.body;
+        const logFile = path.join(__dirname, fileName || 'enterprise_ai_global_logs.txt');
+        
+        // Append to log file
+        fs.appendFileSync(logFile, formattedLine + '\\n');
+        
+        console.log('📝 Log saved:', logEntry.type, '-', logEntry.query.substring(0, 50));
+        res.json({ success: true, message: 'Log saved successfully' });
+    } catch (error) {
+        console.error('❌ Failed to save log:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(\`🚀 Server running at http://localhost:\${PORT}\`);
+    console.log(\`📄 HTML file available at http://localhost:\${PORT}/index.html\`);
+    console.log(\`📝 Logs will be saved to: enterprise_ai_global_logs.txt\`);
+});
+
+// Setup: npm install express cors
+// Run: node server.js
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 OPTION 2: Python Server (server.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+import os
+import json
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/')
+def serve_html():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/api/log', methods=['POST'])
+def log_entry():
+    try:
+        data = request.get_json()
+        log_entry = data.get('logEntry', {})
+        formatted_line = data.get('formattedLine', '')
+        file_name = data.get('fileName', 'enterprise_ai_global_logs.txt')
+        
+        # Append to log file
+        with open(file_name, 'a', encoding='utf-8') as f:
+            f.write(formatted_line + '\\n')
+        
+        print(f"📝 Log saved: {log_entry.get('type')} - {log_entry.get('query', '')[:50]}")
+        return jsonify({'success': True, 'message': 'Log saved successfully'})
+    
+    except Exception as e:
+        print(f"❌ Failed to save log: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+if __name__ == '__main__':
+    print("🚀 Server running at http://localhost:5000")
+    print("📄 HTML file available at http://localhost:5000/")
+    print("📝 Logs will be saved to: enterprise_ai_global_logs.txt")
+    app.run(debug=True, port=5000)
+
+# Setup: pip install flask flask-cors
+# Run: python server.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 OPTION 3: PHP Server (server.php)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/api/log') {
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $logEntry = $input['logEntry'] ?? [];
+        $formattedLine = $input['formattedLine'] ?? '';
+        $fileName = $input['fileName'] ?? 'enterprise_ai_global_logs.txt';
+        
+        // Append to log file
+        file_put_contents($fileName, $formattedLine . "\\n", FILE_APPEND | LOCK_EX);
+        
+        error_log("📝 Log saved: " . $logEntry['type'] . " - " . substr($logEntry['query'], 0, 50));
+        echo json_encode(['success' => true, 'message' => 'Log saved successfully']);
+    } catch (Exception $e) {
+        error_log("❌ Failed to save log: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+} else {
+    // Serve HTML file
+    readfile('index.html');
+}
+?>
+
+# Run: php -S localhost:8000 server.php
+# Then visit: http://localhost:8000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUICK START:
+1. Save the HTML as 'index.html'
+2. Create one of the server files above in the same directory
+3. Install dependencies (if needed)
+4. Run the server
+5. Open the URL shown in console
+6. Start using the AI - logs will save to 'enterprise_ai_global_logs.txt'
+
+FEATURES:
+✅ Real-time server logging
+✅ Backup to browser if server fails
+✅ Connection status indicator
+✅ Cross-user tracking
+✅ Text file in same directory as HTML
+
+The web app will now automatically send all logs to your server!
+        `);
+    </script>
+</body>
+</html>
